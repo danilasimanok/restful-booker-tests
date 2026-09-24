@@ -379,7 +379,59 @@
 					},
 					"response": []
 				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"function deleteById(bookingId) {",
+							"    const deleteRequest = {",
+							"        url: baseUrl + \"/booking/\" + bookingId,",
+							"        method: 'DELETE',",
+							"        header: { 'Authorization': 'Basic YWRtaW46cGFzc3dvcmQxMjM=' }",
+							"    };",
+							"    pm.sendRequest(deleteRequest, (error, response) => {});",
+							"}",
+							"const baseUrl = pm.collectionVariables.get(\"base_url\");",
+							"const getRequestString = baseUrl + \"/booking?firstname=John&lastname=Doe\";",
+							"pm.sendRequest(getRequestString, (err, response) => {",
+							"    response.json().forEach((bookingJson) => {",
+							"        console.log(bookingJson);",
+							"        deleteById(bookingJson.bookingid);",
+							"    })",
+							"});"
+						]
+					}
+				}
 			]
+		},
+		{
+			"name": "GetBookingIds",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/booking",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"booking"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
