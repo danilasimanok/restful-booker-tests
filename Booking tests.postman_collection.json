@@ -6,7 +6,7 @@
 	},
 	"item": [
 		{
-			"name": "Ping",
+			"name": "HealthCheck",
 			"item": [
 				{
 					"name": "Ping works as intended",
@@ -49,7 +49,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 4xx\", function () {",
-									"    pm.expect(pm.response.code).to.be.within(400, 500);",
+									"    pm.expect(pm.response.code).to.be.within(400, 499);",
 									"});"
 								],
 								"type": "text/javascript"
@@ -74,7 +74,7 @@
 			]
 		},
 		{
-			"name": "Auth",
+			"name": "CreateToken",
 			"item": [
 				{
 					"name": "Malformed request is not allowed",
@@ -84,7 +84,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 4xx\", function () {",
-									"    pm.expect(pm.response.code).to.be.within(400, 500);",
+									"    pm.expect(pm.response.code).to.be.within(400, 499);",
 									"});"
 								],
 								"type": "text/javascript"
@@ -166,7 +166,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 4xx\", function () {",
-									"    pm.expect(pm.response.code).to.be.within(400, 500);",
+									"    pm.expect(pm.response.code).to.be.within(400, 499);",
 									"});"
 								],
 								"type": "text/javascript"
@@ -192,6 +192,188 @@
 							],
 							"path": [
 								"auth"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "CreateBooking",
+			"item": [
+				{
+					"name": "Malformed requests are not allowed",
+					"item": [
+						{
+							"name": "Name absence",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 4xx\", function () {",
+											"    pm.expect(pm.response.code).to.be.within(400, 499);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"totalprice\" : 1346,\n    \"depositpaid\" : false,\n    \"bookingdates\" : {\n        \"checkin\" : \"2020-01-01\",\n        \"checkout\" : \"2021-01-01\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/booking",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Additional needs absence",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 4xx\", function () {",
+											"    pm.expect(pm.response.code).to.be.within(400, 499);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"firstname\" : \"John\",\n    \"lastname\" : \"Doe\",\n    \"totalprice\" : 1346,\n    \"depositpaid\" : false,\n    \"bookingdates\" : {\n        \"checkin\" : \"2020-01-01\",\n        \"checkout\" : \"2021-01-01\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/booking",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Check out before check in",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 4xx\", function () {",
+											"    pm.expect(pm.response.code).to.be.within(400, 499);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"firstname\" : \"John\",\n    \"lastname\" : \"Doe\",\n    \"totalprice\" : 1346,\n    \"depositpaid\" : false,\n    \"bookingdates\" : {\n        \"checkin\" : \"2021-01-01\",\n        \"checkout\" : \"2020-01-01\"\n    },\n    \"additionalneeds\" : \"Something\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/booking",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Booking works as intended",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.test(\"Body contains id\", function () {",
+									"    pm.expect(responseJson.bookingid).to.be.a('number');",
+									"});",
+									"pm.test(\"Response's booking mathches the original one\", function () {",
+									"    pm.expect(responseJson.booking).to.eql({",
+									"        firstname : \"John\", lastname : \"Doe\",",
+									"        totalprice : 1346, depositpaid : false,",
+									"        bookingdates : {",
+									"            checkin : \"2020-01-01\",",
+									"            checkout : \"2021-01-01\"",
+									"        },",
+									"        additionalneeds : \"Something\"",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstname\" : \"John\",\n    \"lastname\" : \"Doe\",\n    \"totalprice\" : 1346,\n    \"depositpaid\" : false,\n    \"bookingdates\" : {\n        \"checkin\" : \"2020-01-01\",\n        \"checkout\" : \"2021-01-01\"\n    },\n    \"additionalneeds\" : \"Something\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/booking",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"booking"
 							]
 						}
 					},
