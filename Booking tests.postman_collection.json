@@ -998,6 +998,320 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "DeleteBooking",
+			"item": [
+				{
+					"name": "Not to be accepted",
+					"item": [
+						{
+							"name": "Delete booking doesn't accept wrong authorization creds",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "password122",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "admin",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/booking/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking",
+										"{{id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete booking doesn't accept wrong token creds",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "token=mda",
+										"type": "default"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/booking/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking",
+										"{{id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete booking doesn't accept wrong bookingid",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "password123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "admin",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/booking/123456",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking",
+										"123456"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 4xx\", function () {",
+									"    pm.expect(pm.response.code).to.be.within(400, 499);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "To be accepted",
+					"item": [
+						{
+							"name": "Delete booking accepts token creds",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "token={{token}}",
+										"type": "default"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/booking/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking",
+										"{{id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete booking accepts authorization creds",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "password123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "admin",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/booking/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking",
+										"{{id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								]
+							}
+						}
+					]
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const booking = {",
+							"    firstname : \"Jane\", lastname : \"Doe\",",
+							"    totalprice : 228, depositpaid : true,",
+							"    bookingdates : { checkin : \"2020-01-02\", checkout : \"2021-01-10\" },",
+							"    additionalneeds : \"Something\"",
+							"}",
+							"pm.variables.set(\"booking\", booking);",
+							"",
+							"const baseUrl = pm.collectionVariables.get(\"base_url\");",
+							"const createBooking = {",
+							"    url: baseUrl + \"/booking\", method: \"POST\",",
+							"    header: { \"Content-Type\": \"application/json\" },",
+							"    body: { mode: 'raw', raw: JSON.stringify(booking) }",
+							"}",
+							"",
+							"pm.sendRequest(createBooking, (error, response) => {",
+							"    var id = response.json().bookingid;",
+							"    pm.variables.set(\"id\", id);",
+							"});",
+							"",
+							"const creds = { username: \"admin\", password: \"password123\"};",
+							"const createToken = {",
+							"    url: baseUrl + \"/auth\", method: \"POST\",",
+							"    header: { \"Content-Type\": \"application/json\" },",
+							"    body: { mode: 'raw', raw: JSON.stringify(creds) }",
+							"}",
+							"",
+							"pm.sendRequest(createToken, (error, response) => {",
+							"    var token = response.json().token;",
+							"    pm.variables.set(\"token\", token);",
+							"});"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
 		}
 	],
 	"event": [
