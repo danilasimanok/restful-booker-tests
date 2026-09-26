@@ -1255,6 +1255,15 @@
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"const baseUrl = pm.collectionVariables.get(\"base_url\");",
+									"const bookingId = pm.variables.get(\"id\");",
+									"const getRequestString = baseUrl + \"/booking/\" + bookingId; ",
+									"pm.test(\"The booking cease to exist\", () => {",
+									"    pm.sendRequest(getRequestString, (error, response) => {",
+									"        pm.expect(response).to.have.status(404);",
+									"    });",
 									"});"
 								]
 							}
