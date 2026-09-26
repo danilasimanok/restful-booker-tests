@@ -1321,6 +1321,276 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "UpdateBooking",
+			"item": [
+				{
+					"name": "Update refuses inconsistent data",
+					"item": [
+						{
+							"name": "Fields format wrong",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"firstname\" : \"John\",\n    \"lastname\" : \"Doe\",\n    \"totalprice\" : true,\n    \"depositpaid\" : 1,\n    \"bookingdates\" : {\n        \"checkin\" : \"first of september\",\n        \"checkout\" : \"2020-01-01\"\n    },\n    \"additionalneeds\" : \"Something\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/booking/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking",
+										"{{id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Check out before check in",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"firstname\" : \"John\",\n    \"lastname\" : \"Doe\",\n    \"totalprice\" : 1346,\n    \"depositpaid\" : false,\n    \"bookingdates\" : {\n        \"checkin\" : \"2021-01-01\",\n        \"checkout\" : \"2020-01-01\"\n    },\n    \"additionalneeds\" : \"Something\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/booking/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking",
+										"{{id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Partial updates not allowed",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"firstname\" : \"John\",\n    \"lastname\" : \"Doe\",\n    \"totalprice\" : 1346\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/booking/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking",
+										"{{id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 4xx\", function () {",
+									"    pm.expect(pm.response.code).to.be.within(400, 499);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Update changes booking",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"const expectedBooking = {",
+									"    firstname : \"John\", lastname : \"Doe\",",
+									"    totalprice : 1346, depositpaid : false,",
+									"    bookingdates : {",
+									"        checkin : \"2020-01-01\",",
+									"        checkout : \"2021-01-01\"",
+									"    },",
+									"    additionalneeds : \"Something\"",
+									"}",
+									"pm.test(\"The returned booking matches with updated one\", function () {",
+									"    pm.expect(responseJson).to.eql(expectedBooking);",
+									"});",
+									"",
+									"const baseUrl = pm.collectionVariables.get(\"base_url\");",
+									"const bookingId = pm.variables.get(\"id\");",
+									"const getRequestString = baseUrl + \"/booking/\" + bookingId; ",
+									"pm.test(\"The booking has actually changed\", () => {",
+									"    pm.sendRequest(getRequestString, (error, response) => {",
+									"        var responseJson = response.json();",
+									"        pm.expect(responseJson).to.eql(expectedBooking);",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstname\" : \"John\",\n    \"lastname\" : \"Doe\",\n    \"totalprice\" : 1346,\n    \"depositpaid\" : false,\n    \"bookingdates\" : {\n        \"checkin\" : \"2020-01-01\",\n        \"checkout\" : \"2021-01-01\"\n    },\n    \"additionalneeds\" : \"Something\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/booking/{{id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"booking",
+								"{{id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update refuses to change non-existent booking",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 4xx\", function () {",
+									"    pm.expect(pm.response.code).to.be.within(400, 499);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstname\" : \"John\",\n    \"lastname\" : \"Doe\",\n    \"totalprice\" : 1346,\n    \"depositpaid\" : false,\n    \"bookingdates\" : {\n        \"checkin\" : \"2020-01-01\",\n        \"checkout\" : \"2021-01-01\"\n    },\n    \"additionalneeds\" : \"Something\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/booking/123456",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"booking",
+								"123456"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "basic",
+				"basic": [
+					{
+						"key": "password",
+						"value": "password123",
+						"type": "string"
+					},
+					{
+						"key": "username",
+						"value": "admin",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const booking = {",
+							"    firstname : \"Jane\", lastname : \"Doe\",",
+							"    totalprice : 228, depositpaid : true,",
+							"    bookingdates : { checkin : \"2020-01-02\", checkout : \"2021-01-10\" },",
+							"    additionalneeds : \"Something\"",
+							"}",
+							"pm.variables.set(\"booking\", booking);",
+							"",
+							"const baseUrl = pm.collectionVariables.get(\"base_url\");",
+							"const createBooking = {",
+							"    url: baseUrl + \"/booking\", method: \"POST\",",
+							"    header: { \"Content-Type\": \"application/json\" },",
+							"    body: { mode: 'raw', raw: JSON.stringify(booking) }",
+							"}",
+							"",
+							"pm.sendRequest(createBooking, (error, response) => {",
+							"    var id = response.json().bookingid;",
+							"    pm.variables.set(\"id\", id);",
+							"});"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
 		}
 	],
 	"event": [
