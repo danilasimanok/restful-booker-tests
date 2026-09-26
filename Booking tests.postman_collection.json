@@ -1591,6 +1591,234 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "PartialUpdateBooking",
+			"item": [
+				{
+					"name": "Allowed requests",
+					"item": [
+						{
+							"name": "Partially update updates booking",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var booking = pm.variables.get(\"booking\");",
+											"booking.firstname = \"John\";",
+											"pm.variables.set(\"booking\", booking);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{ \"firstname\": \"John\" }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/booking/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking",
+										"{{id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Partially update allows empty updates",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{ }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/booking/{{id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking",
+										"{{id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"const expectedBooking = pm.variables.get(\"booking\");",
+									"pm.test(\"The returned booking matches with updated one\", function () {",
+									"    pm.expect(responseJson).to.eql(expectedBooking);",
+									"});",
+									"",
+									"const baseUrl = pm.collectionVariables.get(\"base_url\");",
+									"const bookingId = pm.variables.get(\"id\");",
+									"const getRequestString = baseUrl + \"/booking/\" + bookingId; ",
+									"pm.test(\"The booking has actually changed\", () => {",
+									"    pm.sendRequest(getRequestString, (error, response) => {",
+									"        var responseJson = response.json();",
+									"        pm.expect(responseJson).to.eql(expectedBooking);",
+									"    });",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Partially update refuses to change non-existent booking",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 4xx\", function () {",
+									"    pm.expect(pm.response.code).to.be.within(400, 499);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \"firstname\": \"John\" }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/booking/123456",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"booking",
+								"123456"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "basic",
+				"basic": [
+					{
+						"key": "password",
+						"value": "password123",
+						"type": "string"
+					},
+					{
+						"key": "username",
+						"value": "admin",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const booking = {",
+							"    firstname : \"Jane\", lastname : \"Doe\",",
+							"    totalprice : 228, depositpaid : true,",
+							"    bookingdates : { checkin : \"2020-01-02\", checkout : \"2021-01-10\" },",
+							"    additionalneeds : \"Something\"",
+							"}",
+							"pm.variables.set(\"booking\", booking);",
+							"",
+							"const baseUrl = pm.collectionVariables.get(\"base_url\");",
+							"const createBooking = {",
+							"    url: baseUrl + \"/booking\", method: \"POST\",",
+							"    header: { \"Content-Type\": \"application/json\" },",
+							"    body: { mode: 'raw', raw: JSON.stringify(booking) }",
+							"}",
+							"",
+							"pm.sendRequest(createBooking, (error, response) => {",
+							"    var id = response.json().bookingid;",
+							"    pm.variables.set(\"id\", id);",
+							"});"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
 		}
 	],
 	"event": [
