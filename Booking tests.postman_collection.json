@@ -15,8 +15,8 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
 									"});",
 									"pm.test(\"Body matches Created\", function () {",
 									"    pm.expect(pm.response.text()).to.include(\"Created\");",
@@ -96,7 +96,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"admin\",\n    \"password\": \"password123\"\n}",
+							"raw": "{\n    \"username\": \"admin\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -395,6 +395,7 @@
 					"script": {
 						"type": "text/javascript",
 						"exec": [
+							"const baseUrl = pm.collectionVariables.get(\"base_url\");",
 							"function deleteById(bookingId) {",
 							"    const deleteRequest = {",
 							"        url: baseUrl + \"/booking/\" + bookingId,",
@@ -403,11 +404,9 @@
 							"    };",
 							"    pm.sendRequest(deleteRequest, (error, response) => {});",
 							"}",
-							"const baseUrl = pm.collectionVariables.get(\"base_url\");",
 							"const getRequestString = baseUrl + \"/booking?firstname=John&lastname=Doe\";",
 							"pm.sendRequest(getRequestString, (err, response) => {",
 							"    response.json().forEach((bookingJson) => {",
-							"        console.log(bookingJson);",
 							"        deleteById(bookingJson.bookingid);",
 							"    })",
 							"});"
@@ -418,20 +417,390 @@
 		},
 		{
 			"name": "GetBookingIds",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/booking",
-					"host": [
-						"{{base_url}}"
+			"item": [
+				{
+					"name": "Happy paths",
+					"item": [
+						{
+							"name": "Booking can be found by firstname",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"const baseUrl = pm.collectionVariables.get(\"base_url\");",
+											"const translation = pm.variables.get(\"nameTranslation\");",
+											"const john = translation[\"John\"];",
+											"const responseJson = pm.response.json();",
+											"",
+											"async function getBookingJson (bookingId) {",
+											"    const getRequestString = baseUrl + \"/booking/\" + bookingId;",
+											"    pm.sendRequest(getRequestString, (error, response) => {",
+											"        return response.json();",
+											"    });",
+											"}",
+											"",
+											"pm.test(\"Every booking name is John\", function () {",
+											"    responseJson.forEach((booking) => {",
+											"        getBookingJson(booking.bookingid).then((bookingJson) => {",
+											"            pm.expect(bookingJson.firstname).to.eql(john);",
+											"        });",
+											"        console.log(booking.bookingid);",
+											"    });",
+											"});",
+											"",
+											"const ids = pm.variables.get(\"ids\");",
+											"function deleteById(bookingId) {",
+											"    const deleteRequest = {",
+											"        url: baseUrl + \"/booking/\" + bookingId,",
+											"        method: 'DELETE',",
+											"        header: { 'Authorization': 'Basic YWRtaW46cGFzc3dvcmQxMjM=' }",
+											"    };",
+											"    pm.sendRequest(deleteRequest, (error, response) => {});",
+											"}",
+											"ids.forEach(deleteById);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/booking?firstname=XcfY_xtDzFE9vlZykoTod",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking"
+									],
+									"query": [
+										{
+											"key": "firstname",
+											"value": "XcfY_xtDzFE9vlZykoTod"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Booking can be found by lastname",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"const baseUrl = pm.collectionVariables.get(\"base_url\");",
+											"const translation = pm.variables.get(\"nameTranslation\");",
+											"const doe = translation[\"Doe\"];",
+											"const responseJson = pm.response.json();",
+											"",
+											"async function getBookingJson (bookingId) {",
+											"    const getRequestString = baseUrl + \"/booking/\" + bookingId;",
+											"    pm.sendRequest(getRequestString, (error, response) => {",
+											"        return response.json();",
+											"    });",
+											"}",
+											"",
+											"pm.test(\"Every booking name is Doe\", function () {",
+											"    responseJson.forEach((booking) => {",
+											"        getBookingJson(booking.bookingid).then((bookingJson) => {",
+											"            pm.expect(bookingJson.lastname).to.eql(doe);",
+											"        });",
+											"        console.log(booking.bookingid);",
+											"    });",
+											"});",
+											"",
+											"const ids = pm.variables.get(\"ids\");",
+											"function deleteById(bookingId) {",
+											"    const deleteRequest = {",
+											"        url: baseUrl + \"/booking/\" + bookingId,",
+											"        method: 'DELETE',",
+											"        header: { 'Authorization': 'Basic YWRtaW46cGFzc3dvcmQxMjM=' }",
+											"    };",
+											"    pm.sendRequest(deleteRequest, (error, response) => {});",
+											"}",
+											"ids.forEach(deleteById);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/booking?lastname=cOfhmCndDP3b25EkSiG7f",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking"
+									],
+									"query": [
+										{
+											"key": "lastname",
+											"value": "cOfhmCndDP3b25EkSiG7f"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Booking can be found by checkin",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"const baseUrl = pm.collectionVariables.get(\"base_url\");",
+											"const responseJson = pm.response.json();",
+											"const requestDate = new Date(\"2020-01-01\");",
+											"",
+											"async function getBookingJson (bookingId) {",
+											"    const getRequestString = baseUrl + \"/booking/\" + bookingId;",
+											"    pm.sendRequest(getRequestString, (error, response) => {",
+											"        return response.json();",
+											"    });",
+											"}",
+											"",
+											"pm.test(\"Every booking checking is greater or equal 2020-01-01\", function () {",
+											"    responseJson.forEach((booking) => {",
+											"        getBookingJson(booking.bookingid).then((bookingJson) => {",
+											"            var date = new Date(bookingJson.bookingdates.checkin);",
+											"            pm.expect(date).to.be.above(requestDate);",
+											"        });",
+											"    });",
+											"});",
+											"",
+											"const ids = pm.variables.get(\"ids\");",
+											"function deleteById(bookingId) {",
+											"    const deleteRequest = {",
+											"        url: baseUrl + \"/booking/\" + bookingId,",
+											"        method: 'DELETE',",
+											"        header: { 'Authorization': 'Basic YWRtaW46cGFzc3dvcmQxMjM=' }",
+											"    };",
+											"    pm.sendRequest(deleteRequest, (error, response) => {});",
+											"}",
+											"ids.forEach(deleteById);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/booking?lastname=cOfhmCndDP3b25EkSiG7f&checkin=2020-01-01",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking"
+									],
+									"query": [
+										{
+											"key": "lastname",
+											"value": "cOfhmCndDP3b25EkSiG7f"
+										},
+										{
+											"key": "checkin",
+											"value": "2020-01-01"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Booking can be found by checkout",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"const baseUrl = pm.collectionVariables.get(\"base_url\");",
+											"const responseJson = pm.response.json();",
+											"const requestDate = new Date(\"2021-01-01\");",
+											"",
+											"async function getBookingJson (bookingId) {",
+											"    const getRequestString = baseUrl + \"/booking/\" + bookingId;",
+											"    pm.sendRequest(getRequestString, (error, response) => {",
+											"        return response.json();",
+											"    });",
+											"}",
+											"",
+											"pm.test(\"Every booking checkout is greater or equal 2021-01-01\", function () {",
+											"    responseJson.forEach((booking) => {",
+											"        getBookingJson(booking.bookingid).then((bookingJson) => {",
+											"            var date = new Date(bookingJson.bookingdates.checkout);",
+											"            pm.expect(date).to.be.above(requestDate);",
+											"        });",
+											"    });",
+											"});",
+											"",
+											"const ids = pm.variables.get(\"ids\");",
+											"function deleteById(bookingId) {",
+											"    const deleteRequest = {",
+											"        url: baseUrl + \"/booking/\" + bookingId,",
+											"        method: 'DELETE',",
+											"        header: { 'Authorization': 'Basic YWRtaW46cGFzc3dvcmQxMjM=' }",
+											"    };",
+											"    pm.sendRequest(deleteRequest, (error, response) => {});",
+											"}",
+											"ids.forEach(deleteById);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/booking?lastname=cOfhmCndDP3b25EkSiG7f&checkout=2021-01-01",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"booking"
+									],
+									"query": [
+										{
+											"key": "lastname",
+											"value": "cOfhmCndDP3b25EkSiG7f"
+										},
+										{
+											"key": "checkout",
+											"value": "2021-01-01"
+										}
+									]
+								}
+							},
+							"response": []
+						}
 					],
-					"path": [
-						"booking"
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const namesTranslation = {",
+									"    \"John\": \"XcfY_xtDzFE9vlZykoTod\",",
+									"    \"Doe\": \"cOfhmCndDP3b25EkSiG7f\",",
+									"    \"Jane\": \"w3VJ0lQaVMvZmC5qHy7RC\",",
+									"    \"Smith\": \"8YWYIy9uticsZ3sWhMwST\"",
+									"}",
+									"pm.variables.set(\"nameTranslation\", namesTranslation);",
+									"",
+									"const bookings = [",
+									"    // John Doe",
+									"    { firstname : namesTranslation[\"John\"], lastname : namesTranslation[\"Doe\"],",
+									"      totalprice : 1346, depositpaid : false,",
+									"      bookingdates : { checkin : \"2020-01-01\", checkout : \"2021-01-01\" },",
+									"      additionalneeds : \"Something\" },",
+									"    // Jane Doe",
+									"    { firstname : namesTranslation[\"Jane\"], lastname : namesTranslation[\"Doe\"],",
+									"      totalprice : 228, depositpaid : true,",
+									"      bookingdates : { checkin : \"2020-01-02\", checkout : \"2021-01-10\" },",
+									"      additionalneeds : \"Something\" },",
+									"    // John Smith",
+									"    { firstname : namesTranslation[\"John\"], lastname : namesTranslation[\"Smith\"],",
+									"      totalprice : 1346, depositpaid : false,",
+									"      bookingdates : { checkin : \"2020-01-03\", checkout : \"2021-01-11\" },",
+									"      additionalneeds : \"Something\" },",
+									"]",
+									"",
+									"const baseUrl = pm.collectionVariables.get(\"base_url\");",
+									"var ids = [];",
+									"bookings.forEach((booking) => {",
+									"    var createBooking = {",
+									"        url: baseUrl + \"/booking\", method: \"POST\",",
+									"        header: { \"Content-Type\": \"application/json\" },",
+									"        body: { mode: 'raw', raw: JSON.stringify(booking) }",
+									"    }",
+									"    pm.sendRequest(createBooking, (error, response) => {",
+									"        var id = response.json().bookingid;",
+									"        ids.push(id);",
+									"    });",
+									"});",
+									"pm.variables.set(\"ids\", ids);"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
 					]
+				},
+				{
+					"name": "Malformed dates are not allowed",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 4xx\", function () {",
+									"    pm.expect(pm.response.code).to.be.within(400, 499);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/booking?checkin=something&checkout=terrible",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"booking"
+							],
+							"query": [
+								{
+									"key": "checkin",
+									"value": "something"
+								},
+								{
+									"key": "checkout",
+									"value": "terrible"
+								}
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		}
 	],
 	"event": [
