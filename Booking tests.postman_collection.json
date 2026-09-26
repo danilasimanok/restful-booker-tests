@@ -840,6 +840,164 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "GetBooking",
+			"item": [
+				{
+					"name": "Get booking finds created booking",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const booking = {",
+									"    firstname : \"Jane\", lastname : \"Doe\",",
+									"    totalprice : 228, depositpaid : true,",
+									"    bookingdates : { checkin : \"2020-01-02\", checkout : \"2021-01-10\" },",
+									"    additionalneeds : \"Something\"",
+									"}",
+									"pm.variables.set(\"booking\", booking);",
+									"",
+									"const baseUrl = pm.collectionVariables.get(\"base_url\");",
+									"const createBooking = {",
+									"    url: baseUrl + \"/booking\", method: \"POST\",",
+									"    header: { \"Content-Type\": \"application/json\" },",
+									"    body: { mode: 'raw', raw: JSON.stringify(booking) }",
+									"}",
+									"",
+									"pm.sendRequest(createBooking, (error, response) => {",
+									"    var id = response.json().bookingid;",
+									"    pm.variables.set(\"id\", id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"const booking = pm.variables.get(\"booking\");",
+									"pm.test(\"Response's booking mathches the original one\", function () {",
+									"    pm.expect(responseJson).to.eql(booking);",
+									"});",
+									"",
+									"const baseUrl = pm.collectionVariables.get(\"base_url\");",
+									"const bookingId = pm.variables.get(\"id\");",
+									"const deleteRequest = {",
+									"    url: baseUrl + \"/booking/\" + bookingId,",
+									"    method: 'DELETE',",
+									"    header: { 'Authorization': 'Basic YWRtaW46cGFzc3dvcmQxMjM=' }",
+									"};",
+									"pm.sendRequest(deleteRequest, (error, response) => {});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/booking/{{id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"booking",
+								"{{id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get booking doesn't find non-existent id",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/booking/123456",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"booking",
+								"123456"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get booking doesn't allow malformed id",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 4xx\", function () {",
+									"    pm.expect(pm.response.code).to.be.within(400, 499);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/booking/one-two-three",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"booking",
+								"one-two-three"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
